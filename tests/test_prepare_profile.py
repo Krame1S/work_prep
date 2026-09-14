@@ -1,4 +1,4 @@
-from work_prep.profile import prepare_profile
+from prepare_profile import prepare_profile
 from copy import deepcopy
 
 
