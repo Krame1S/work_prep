@@ -63,7 +63,7 @@ def test_no_delay_after_last_failure(monkeypatch):
     def fake_sleep(seconds):
         sleep_calls.append(seconds)
 
-    monkeypatch.setattr("retry_deco_using_for_loop.time.sleep", fake_sleep)
+    monkeypatch.setattr("retry_deco.time.sleep", fake_sleep)
 
     @retry(attempts=total_attempts)
     def always_fails_func():
