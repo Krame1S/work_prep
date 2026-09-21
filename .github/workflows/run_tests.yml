@@ -11,4 +11,4 @@ jobs:
           python-version: "3.13"
       - run: pip install -r issue_1/requirements.txt
       - run: pip install pytest
-      - run: pytest
+      - run: cd issue_1/ ; pytest
