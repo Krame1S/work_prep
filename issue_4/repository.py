@@ -8,6 +8,11 @@ class Item:
     name: str
     version: int = 1
 
+    def __post_init__(self):
+        if not self.id or not self.name:
+            raise ValueError('id and name must not be empty')
+
+
 class ItemRepository(Protocol):
     def add(self, item: Item) -> None: ...
     def get(self, item_id: str) -> Item: ...
