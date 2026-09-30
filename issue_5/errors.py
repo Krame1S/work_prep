@@ -1,14 +1,23 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from exceptions import AlreadyExistsError, ItemNotFoundError, VersionConflictError
+from fastapi.exceptions import RequestValidationError
+from exceptions import AlreadyExistsError, InvalidInputError, ItemNotFoundError, VersionConflictError
 
 
 def register_error_handlers(app: FastAPI):
     app.add_exception_handler(ItemNotFoundError, handle_not_found)
     app.add_exception_handler(AlreadyExistsError, handle_already_exists)
     app.add_exception_handler(VersionConflictError, handle_version_conflict)
-    app.add_exception_handler(ValueError, handle_validation)
+    app.add_exception_handler(InvalidInputError, handle_validation)
     app.add_exception_handler(Exception, handle_unexpected)
+    app.add_exception_handler(RequestValidationError, handle_request_validation)
+    
+
+def handle_request_validation(request, exc):
+    return JSONResponse(
+        status_code=422,
+        content={'error': {'code': 'validation_error', 'message': 'Invalid request data'}},
+    )
 
 
 def handle_not_found(request, exc):

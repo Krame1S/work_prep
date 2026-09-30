@@ -18,3 +18,7 @@ class VersionConflictError(BaseItemRepositoryError):
     def __init__(self, item_id: str):
         super().__init__(f"wrong version for '{item_id}'")
         self.item_id = item_id
+
+
+class InvalidInputError(BaseItemRepositoryError):
+    pass

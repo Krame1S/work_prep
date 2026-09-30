@@ -135,3 +135,105 @@ def test_add_item_same_result_with_service_and_http():
         'name': direct.name,
         'version': direct.version,
     }
+
+
+def test_create_missing_field_returns_consistent_validation_format():
+    client = make_client()
+    response = client.post('/items', json={'id': '1'})
+
+    assert response.status_code == 422
+    assert response.json()['error']['code'] == 'validation_error'
+
+    list_response = client.get('/items')
+    assert list_response.json() == []
+
+
+def test_replace_bad_expected_version_type_returns_consistent_validation_format():
+    client = make_client()
+    client.post('/items', json={'id': '1', 'name': 'first'})
+    response = client.put('/items/1?expected_version=bad', json={'name': 'second'})
+
+    assert response.status_code == 422
+    assert response.json()['error']['code'] == 'validation_error'
+
+    get_response = client.get('/items/1')
+    assert get_response.json() == {'id': '1', 'name': 'first', 'version': 1}
+
+
+def test_unexpected_value_error_returns_generic_500():
+    class BrokenService(ItemService):
+        def get_item(self, item_id):
+            raise ValueError('internal database detail')
+
+    client = TestClient(
+        create_app(BrokenService(InMemoryItemRepository())),
+        raise_server_exceptions=False,
+    )
+    response = client.get('/items/1')
+
+    assert response.status_code == 500
+    assert response.json() == {
+        'error': {'code': 'internal_error', 'message': 'Internal server error'}
+    }
+    assert 'internal database detail' not in response.text
+
+
+def test_unexpected_runtime_error_returns_generic_500():
+    class BrokenService(ItemService):
+        def get_item(self, item_id):
+            raise RuntimeError('boom')
+
+    client = TestClient(
+        create_app(BrokenService(InMemoryItemRepository())),
+        raise_server_exceptions=False,
+    )
+    response = client.get('/items/1')
+
+    assert response.status_code == 500
+    assert response.json() == {
+        'error': {'code': 'internal_error', 'message': 'Internal server error'}
+    }
+
+
+def test_create_with_unsupported_id_characters_returns_422_and_state_unchanged():
+    client = make_client()
+    response = client.post('/items', json={'id': 'a?b', 'name': 'x'})
+
+    assert response.status_code == 422
+    assert response.json()['error']['code'] == 'validation_error'
+
+    list_response = client.get('/items')
+    assert list_response.json() == []
+
+
+def test_create_with_non_ascii_id_returns_422_and_state_unchanged():
+    client = make_client()
+    response = client.post('/items', json={'id': 'Илья', 'name': 'x'})
+
+    assert response.status_code == 422
+    assert response.json()['error']['code'] == 'validation_error'
+
+    list_response = client.get('/items')
+    assert list_response.json() == []
+
+
+def test_create_with_slash_in_id_returns_422_and_state_unchanged():
+    client = make_client()
+    response = client.post('/items', json={'id': 'a/b', 'name': 'x'})
+
+    assert response.status_code == 422
+    assert response.json()['error']['code'] == 'validation_error'
+
+    list_response = client.get('/items')
+    assert list_response.json() == []
+
+
+def test_create_location_header_is_reachable():
+    client = make_client()
+    response = client.post('/items', json={'id': 'abc-123_ok', 'name': 'x'})
+
+    assert response.status_code == 201
+
+    follow = client.get(response.headers['Location'])
+    assert follow.status_code == 200
+    assert follow.json() == {'id': 'abc-123_ok', 'name': 'x', 'version': 1}
