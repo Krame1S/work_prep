@@ -39,19 +39,31 @@ async def test_reverse_completion_preserves_order():
 
     def make_fetch():
         events = {u: asyncio.Event() for u in urls}
+        started = {u: asyncio.Event() for u in urls}
+        finished = {u: asyncio.Event() for u in urls}
 
         async def fetch(url):
+            started[url].set()
             await events[url].wait()
+            finished[url].set()
             return url
 
-        return fetch, events
+        return fetch, events, started, finished
 
-    fake_fetch, events = make_fetch()
+    fake_fetch, events, started, finished = make_fetch()
     task = asyncio.create_task(download_all(urls, limit=3, fetch=fake_fetch))
 
+    for u in urls:
+        await started[u].wait()
+
     events['3'].set()
+    await finished['3'].wait()
+
     events['2'].set()
+    await finished['2'].wait()
+
     events['1'].set()
+    await finished['1'].wait()
 
     result = await task
     assert result == ['1', '2', '3']
