@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        issue: [issue_1, issue_2, issue_3, issue_4]
+        issue: [issue_1, issue_2, issue_3, issue_4, issue_5]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
