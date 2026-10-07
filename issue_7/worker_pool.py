@@ -51,6 +51,7 @@ class EventService:
         finally:
             task.cancel()
             failed.cancel()
+            await asyncio.gather(task, failed, return_exceptions=True)
 
 
     async def _worker(self):

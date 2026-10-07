@@ -15,6 +15,10 @@ async def spin(times: int = 10) -> None:
         await asyncio.sleep(0)
 
 
+def leaked_tasks() -> set:
+    return asyncio.all_tasks() - {asyncio.current_task()}
+
+
 def make_service(handler, queue_size=10, worker_count=1, max_attempts=3) -> EventService:
     return EventService(handler, queue_size, worker_count, max_attempts)
 
@@ -281,11 +285,12 @@ async def test_internal_worker_failure_does_not_hang_stop():
     await service.start()
     workers = list(service.workers)
 
-    with pytest.raises(Exception):
+    with pytest.raises(RuntimeError, match='internal failure'):
         await asyncio.wait_for(service.stop(), timeout=1)
 
     assert service.workers == []
     assert all(t.done() for t in workers)
+    assert not leaked_tasks()
 
 
 async def test_submit_raises_original_worker_error_after_failure():
@@ -302,3 +307,5 @@ async def test_submit_raises_original_worker_error_after_failure():
 
     with pytest.raises(RuntimeError, match='internal failure'):
         await asyncio.wait_for(service.stop(), timeout=1)
+
+    assert not leaked_tasks()
