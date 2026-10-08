@@ -65,9 +65,11 @@ async def test_initial_result_on_success():
     async def false_return():
         return False
 
+    @fallback_async(default=1)
     async def zero_return():
         return 0
 
+    @fallback_async(default=1)
     async def none_return():
         return None
     
