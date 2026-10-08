@@ -1,4 +1,3 @@
-import asyncio
 from typing import Callable
 from functools import wraps
 
@@ -16,15 +15,3 @@ def trace_async(events: list[str]):
             
         return inner
     return wrapper
-
-events: list[str] = []
-
-@trace_async(events)
-async def get_value():
-    return 42
-
-async def main():
-    print(await get_value())
-    print(events)
-
-asyncio.run(main())

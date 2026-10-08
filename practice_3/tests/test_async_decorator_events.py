@@ -25,9 +25,12 @@ async def test_events_is_empty_before_await():
     async def get_value():
         return 42
 
+    pending = get_value()
+
     assert events == [] # должен быть пустым до await (стоит до await)
 
-    assert await get_value() == 42
+    await pending
+
     assert events == ['start', 'finish']
 
 
