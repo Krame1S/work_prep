@@ -18,6 +18,7 @@ jobs:
             issue_6,
             issue_7,
             practice_2,
+            practice_4,
           ]
     steps:
       - uses: actions/checkout@v4
