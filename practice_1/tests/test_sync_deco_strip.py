@@ -12,8 +12,20 @@ def test_regular_string():
     assert greeting("Илья", punctuation="?") == "Привет, Илья?"
 
 
-def test_empty_string():
-    assert greeting('') == 'Привет, !'
+def test_empty_result():
+    @strip_result
+    def returns_empty():
+        return ""
+
+    assert returns_empty() == ""
+
+
+def test_whitespace_only_result():
+    @strip_result
+    def returns_whitespace():
+        return " \t\n "
+
+    assert returns_whitespace() == ""
 
 
 def test_only_space_str():
@@ -43,14 +55,16 @@ def test_called_once():
 
 
 def test_same_exception_rises():
+    error = ValueError()
+
     @strip_result
     def exc():
-        raise ValueError
+        raise error
 
     with pytest.raises(ValueError) as exc_info:
         exc()
-    
-    assert ValueError == type(exc_info.value)
+
+    assert exc_info.value is error
 
 
 def test_metadata_preserved():
