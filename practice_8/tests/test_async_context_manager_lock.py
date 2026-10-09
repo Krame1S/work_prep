@@ -16,7 +16,7 @@ async def test_lock_identity_and_states():
 
 async def test_free_lock_on_error():
     lock = asyncio.Lock()
-    exc = RuntimeError
+    exc = RuntimeError()
     with pytest.raises(RuntimeError) as exc_info:
         async with HoldLock(lock):
             raise exc
