@@ -24,6 +24,7 @@ jobs:
             practice_5,
             practice_6,
             practice_7,
+            practice_8,
           ]
     steps:
       - uses: actions/checkout@v4
