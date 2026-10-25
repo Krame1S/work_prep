@@ -100,6 +100,7 @@ def import_inventory(source, destination, *, max_errors=2):
                 writer.writerow(['sku', 'quantity'])
 
                 for number, row in iter_rows(src):
+                    read += 1
                     try:
                         parsed = parse_row(row)
                     except InvalidRowError as exc:
@@ -112,7 +113,6 @@ def import_inventory(source, destination, *, max_errors=2):
                             ) from exc
                         continue
 
-                    read += 1
                     writer.writerow([parsed['sku'], parsed['quantity']])
                     accepted += 1
     except OSError as exc:
