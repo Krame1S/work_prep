@@ -94,11 +94,11 @@ def import_inventory(source, destination, *, max_errors=2):
     accepted = 0
     rejected = 0
     try:
-        with open(source, 'r', encoding='utf-8', newline='') as src:
-            with atomic_output(destination) as out:
-                writer = csv.writer(out, lineterminator='\n')
-                writer.writerow(['sku', 'quantity'])
+        with atomic_output(destination) as out:
+            writer = csv.writer(out, lineterminator='\n')
+            writer.writerow(['sku', 'quantity'])
 
+            with open(source, 'r', encoding='utf-8', newline='') as src:
                 for number, row in iter_rows(src):
                     read += 1
                     try:
